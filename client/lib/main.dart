@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) => MaterialApp.router(
         title: 'Beautifood',
         theme: ThemeData(
+          primarySwatch: ThemeColors.primarySwatch,
           colorScheme: ColorScheme.fromSwatch(
               primarySwatch: ThemeColors.primarySwatch,
               backgroundColor: Colors.white10),

@@ -199,7 +199,6 @@ class Shop with ChangeNotifier {
   ShopMenu? _shopMenu;
 
   String? _myTableNumber;
-  String? _orderSessionId;
   Order? _currentOrder;
 
   Shop(Auth? auth) {
@@ -220,9 +219,12 @@ class Shop with ChangeNotifier {
     notifyListeners();
   }
 
-  String? get orderSessionId => _orderSessionId;
+  String? get orderSessionId => _currentOrder?.id;
   set orderSessionId(String? id) {
-    _orderSessionId = id;
+    if(_currentOrder != null) {
+      clearOrderSession();
+    }
+    newOrder(null, id);
     notifyListeners();
   }
 
@@ -441,6 +443,7 @@ class Shop with ChangeNotifier {
         subtotal: subtotal,
       ),
     );
+    notifyListeners();
   }
 
   Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
@@ -458,6 +461,7 @@ class Shop with ChangeNotifier {
       remarks: "",
       status: [],
     );
+    notifyListeners();
   }
 
   void clear() {
@@ -466,7 +470,7 @@ class Shop with ChangeNotifier {
   }
 
   void clearOrderSession() {
-    _orderSessionId = null;
+    _currentOrder = null;
     _myTableNumber = null;
   }
 }

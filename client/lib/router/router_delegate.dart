@@ -130,6 +130,11 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
       pages: stack,
       onPopPage: (route, result) {
         if (!route.didPop(result)) return false;
+        if (_shopService.selectedMenuItemId != null) {
+          _shopService.selectedMenuItemId = null;
+        } else if (_shopService.shopData != null) {
+          _shopService.selectedShopId = null;
+        }
         notifyListeners();
         return true;
       },
