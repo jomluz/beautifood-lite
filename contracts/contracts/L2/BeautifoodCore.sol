@@ -1,5 +1,6 @@
 pragma solidity ^0.8.0;
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./OwnableERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Beautifood core contract L2
@@ -7,7 +8,17 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @author Carlos Ramos
  */
 
-contract BeautifoodL2 {
+contract BeautifoodL2 is Ownable {
+    struct MenuItem {
+        string name;
+        uint256 price;
+    }
+
+    struct OrderItem {
+        uint256 id;
+        uint256 qty;
+    }
+
     event L2TokenCreated(
         address newToken,
         address l1TokenAddr,
@@ -16,25 +27,87 @@ contract BeautifoodL2 {
     );
 
     mapping(address => address) public ercL1toL2;
+    mapping(address => bool) isWhitelistedStore;
+    mapping(address => MenuItem[]) menuListBySeller;
+    mapping(address => uint256) menuLength;
 
-    // onlyOwner
+    address public paymentTokenAddr;
+
+    modifier onlyWhitelistedStore() {
+        require(isWhitelistedStore[msg.sender], "store is not whitelisted");
+        _;
+    }
+
     function deployNewERC20(
         string memory name,
         string memory symbol,
         address l1TokenAddr
-    ) external {
+    ) external onlyOwner {
         require(ercL1toL2[l1TokenAddr] == address(0), "l2 token already exist");
-        ERC20 newToken = new ERC20(name, symbol);
+        OwnableERC20 newToken = new OwnableERC20(name, symbol);
         ercL1toL2[l1TokenAddr] = address(newToken);
         emit L2TokenCreated(address(newToken), l1TokenAddr, name, symbol);
     }
 
-    // onlyOwner
     function mintERC20(
         address to,
         address l1TokenAddr,
         uint256 amount
-    ) external {
+    ) external onlyOwner {
         require(ercL1toL2[l1TokenAddr] != address(0), "l2 token doesnt exist");
+        OwnableERC20(ercL1toL2[l1TokenAddr]).mint(to, amount);
+    }
+
+    function addStoreToWhitelist(address _storeAddr) external onlyOwner {
+        require(
+            isWhitelistedStore[_storeAddr] == false,
+            "store already whitelisted"
+        );
+        isWhitelistedStore[_storeAddr] = true;
+    }
+
+    function updateMenu(
+        MenuItem[] calldata newMenuList
+    ) external onlyWhitelistedStore {
+        MenuItem[] storage currMenu = menuListBySeller[msg.sender];
+        uint256 i;
+        for (i; i < currMenu.length; i++) {
+            if (i == newMenuList.length) break;
+            currMenu[i] = newMenuList[i];
+        }
+        for (i; i < newMenuList.length; i++) {
+            currMenu.push(newMenuList[i]);
+        }
+        menuLength[msg.sender] = newMenuList.length;
+    }
+
+    function getTotalPriceOfOrder(
+        OrderItem[] calldata order,
+        address seller
+    ) public view returns (uint256 totalAmount) {
+        for (uint256 i = 0; i < order.length; i++) {
+            _checkValidItem(seller, order[i].id);
+            uint256 itemTotal = menuListBySeller[msg.sender][order[i].id]
+                .price * order[i].qty;
+            totalAmount += itemTotal;
+        }
+    }
+
+    // add privacy here using private networks
+    function submitOrder(OrderItem[] calldata order, address seller) external {
+        uint256 amountToTransfer = getTotalPriceOfOrder(order, seller);
+        OwnableERC20(paymentTokenAddr).transferFrom(
+            msg.sender,
+            address(this),
+            amountToTransfer
+        );
+    }
+
+    function _checkValidItem(address seller, uint256 index) internal view {
+        require(menuLength[seller] > index, "item not in the menu");
+    }
+
+    function setPaymentToken(address newTokenAddr) external onlyOwner {
+        paymentTokenAddr = newTokenAddr;
     }
 }
