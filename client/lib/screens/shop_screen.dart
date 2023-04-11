@@ -168,7 +168,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                                               context: context,
                                               builder: (ctx) => ShowQRCodeDialog(
                                                   data:
-                                                      'https://app.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}'),
+                                                      'https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}'),
                                             );
                                           },
                                           icon: const Icon(
@@ -183,7 +183,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                                           splashRadius: 12,
                                           onPressed: () {
                                             Share.share(
-                                                'Join My Beautifood Order Session on ${shop.shopData?.name ?? ''}! https://app.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId} \n Session ID: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
+                                                'Join My Beautifood Order Session on ${shop.shopData?.name ?? ''}! https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId} \n Session ID: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
                                                 subject:
                                                     'Join Beautifood Order Session!');
                                           },

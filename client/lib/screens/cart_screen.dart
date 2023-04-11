@@ -86,7 +86,7 @@ class _CartScreenState extends State<CartScreen> {
                               IconButton(
                                 onPressed: () {
                                   Share.share(
-                                      'Join My Order Session on Beautifood! https://app.beautifood.io/#/shop/${Provider.of<Shop>(context).selectedShopId}?sessionId=${shop.orderSessionId} \n Session ID: ${shop.orderSessionId}',
+                                      'Join My Order Session on Beautifood! https://app.lite.beautifood.io/#/shop/${Provider.of<Shop>(context).selectedShopId}?sessionId=${shop.orderSessionId} \n Session ID: ${shop.orderSessionId}',
                                       subject:
                                           'Join Beautifood Order Session!');
                                 },
