@@ -1,15 +1,17 @@
-# beautifood_lite
+# Beautifood Lite Client
 
-A new Flutter project.
+A stripped lite version of the original beautifood app for PoC with a decentralised backend.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisite
+Flutter Installed and the command `flutter doctor` completes without error.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Build Steps
+1. Clone the repo
+2. run `flutter pub get` in `client` directory
+3. `flutter run` or `flutter run -d <your-preferred-device>` to run with your preferred device
+   1. You can see list of devices you can use through `flutter devices`.
 
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
