@@ -9,10 +9,10 @@ const {
   log,
 } = require("../utils/deploy");
 
-const deployMockChainlinkPriceFeed = async () => {
-};
+const deployMockChainlinkPriceFeed = async () => {};
 
 const main = async () => {
+  await deployWithConfirmation("Beautifood");
 };
 
 main.id = "000_core";
