@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_qrcode_modal_dart/walletconnect_qrcode_modal_dart.dart';
+import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart' as http;
@@ -36,7 +37,6 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
   Future<MsgSignature> signToSignature(Uint8List payload,
       {int? chainId, bool isEIP1559 = false}) {
     // TODO: implement signToSignature
-    
 
     throw UnimplementedError();
   }
@@ -53,19 +53,10 @@ class WalletConnectEthereumCredentials extends CustomTransactionSender {
   }
 }
 
-
 class Auth with ChangeNotifier {
-  final WalletConnect _connector = WalletConnect(
-    bridge: 'https://bridge.walletconnect.org',
-    clientMeta: const PeerMeta(
-      name: 'My App',
-      description: 'An app for converting pictures to NFT',
-      url: 'https://walletconnect.org',
-      icons: [
-        'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
-      ],
-    ),
-  );
+  // Define a session storage
+  final _sessionStorage = WalletConnectSecureStorage();
+  WalletConnect? _connector;
   final _ethereum = Web3Client(
     'https://goerli.infura.io/v3/0db053799f0e48e99357b6dce022b1e7',
     http.Client(),
@@ -73,18 +64,42 @@ class Auth with ChangeNotifier {
   WalletConnectQrCodeModal? _qrCodeModal;
   EthereumWalletConnectProvider? _provider;
   SessionStatus? _session;
-  String? _uri;
 
   bool get isAuth => _session != null;
   String? get account => _session?.accounts[0];
   String? get networkName =>
       _session != null ? _getNetworkName(_session!.chainId) : null;
 
+  Future<bool> tryAutoLogin() async {
+    try {
+      final session = await _sessionStorage.getSession();
+      if (session == null) return false;
+      _connector = WalletConnect(
+        bridge: 'https://bridge.walletconnect.org',
+        session: session,
+        sessionStorage: _sessionStorage,
+        clientMeta: const PeerMeta(
+          name: 'My App',
+          description: 'An app for converting pictures to NFT',
+          url: 'https://walletconnect.org',
+          icons: [
+            'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+          ],
+        ),
+      );
+      _session = await _connector!.connect();
+      _provider = EthereumWalletConnectProvider(_connector!);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> openWalletApp() async => await _qrCodeModal?.openWalletApp();
 
-  Future<double> getBalance() async {
-    final address =
-        EthereumAddress.fromHex(_connector.session.accounts[0]);
+  Future<double?> getBalance() async {
+    if (_connector == null) return null;
+    final address = EthereumAddress.fromHex(_connector!.session.accounts[0]);
     final amount = await _ethereum.getBalance(address);
     return amount.getValueInUnit(EtherUnit.ether).toDouble();
   }
@@ -100,7 +115,7 @@ class Auth with ChangeNotifier {
 
   String get faucetUrl => 'https://faucet.dimensions.network/';
 
-  String get address => _connector.session.accounts[0];
+  String? get address => _connector?.session.accounts[0];
 
   String get coinName => 'Eth';
 
@@ -126,9 +141,21 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> login(BuildContext context) async {
-    if (_connector.connected) {
+    if (_connector?.connected ?? false) {
       throw Exception("Connector already connected");
     }
+    _connector = WalletConnect(
+      bridge: 'https://bridge.walletconnect.org',
+      sessionStorage: _sessionStorage,
+      clientMeta: const PeerMeta(
+        name: 'My App',
+        description: 'An app for converting pictures to NFT',
+        url: 'https://walletconnect.org',
+        icons: [
+          'https://files.gitbook.com/v0/b/gitbook-legacy-files/o/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+        ],
+      ),
+    );
     _qrCodeModal = WalletConnectQrCodeModal(connector: _connector);
     // Subscribe to events
     _qrCodeModal!.registerListeners(
@@ -136,15 +163,15 @@ class Auth with ChangeNotifier {
       onSessionUpdate: (WCSessionUpdateResponse response) {
         print('Session updated: $response');
       },
-      onDisconnect: (){
+      onDisconnect: () {
         _session = null;
         print('Disconnected');
         notifyListeners();
       },
     );
 
-  // Create QR code modal and connect to a wallet, connector returns WalletConnect
-  // session which can be saved and restored.
+    // Create QR code modal and connect to a wallet, connector returns WalletConnect
+    // session which can be saved and restored.
     final session = await _qrCodeModal!
         .connect(context)
         // Errors can also be caught from connector, eg. session cancelled
@@ -157,8 +184,7 @@ class Auth with ChangeNotifier {
     print(session.accounts[0]);
     print(session.chainId);
     _session = session;
-    _provider =
-        EthereumWalletConnectProvider(_connector);
+    _provider = EthereumWalletConnectProvider(_connector!);
     notifyListeners();
   }
 
@@ -166,10 +192,9 @@ class Auth with ChangeNotifier {
     required String recipientAddress,
     required double amount,
   }) async {
-    if(!_connector.connected) return null;
-    final sender =
-        EthereumAddress.fromHex(_connector.session.accounts[0]);
-    final recipient = EthereumAddress.fromHex(address);
+    if (!(_connector?.connected ?? true)) return null;
+    final sender = EthereumAddress.fromHex(_connector!.session.accounts[0]);
+    final recipient = EthereumAddress.fromHex(address!);
 
     final etherAmount =
         EtherAmount.fromInt(EtherUnit.szabo, (amount * 1000 * 1000).toInt());
@@ -203,15 +228,14 @@ class Auth with ChangeNotifier {
   }
 
   Future<String?> signMessage(String message) async {
-    if (!_connector.connected) {
+    if (!(_connector?.connected ?? true)) {
       throw Exception("Connector not connected");
     }
     print("Message received");
     print(message);
-    if (_uri == null) return null;
-   
-    var signature = await _provider!.sign(
-        message: message, address: _session!.accounts[0]);
+
+    var signature =
+        await _provider!.sign(message: message, address: _session!.accounts[0]);
     print(signature);
     return signature;
   }

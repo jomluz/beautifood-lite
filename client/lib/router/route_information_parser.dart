@@ -1,6 +1,7 @@
 import 'package:beautifood_lite/router/route_path.dart';
 import 'package:beautifood_lite/screens/auth_screen.dart';
 import 'package:beautifood_lite/screens/cart_screen.dart';
+import 'package:beautifood_lite/screens/home_screen.dart';
 import 'package:beautifood_lite/screens/menu_item_screen.dart';
 import 'package:beautifood_lite/screens/shop_screen.dart';
 import 'package:beautifood_lite/screens/page_not_found_screen.dart';
@@ -11,7 +12,9 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
   Future<AppRoutePath> parseRouteInformation(
       RouteInformation routeInformation) async {
     final uri = Uri.parse(routeInformation.location!);
-    if(uri.pathSegments.length == 1) {
+    if (uri.pathSegments.isEmpty) {
+      return HomePath();
+    } else if(uri.pathSegments.length == 1) {
       final first = uri.pathSegments[0].toLowerCase();
       switch (first) {
         case 'auth':

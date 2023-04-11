@@ -221,7 +221,7 @@ class Shop with ChangeNotifier {
 
   String? get orderSessionId => _currentOrder?.id;
   set orderSessionId(String? id) {
-    if(_currentOrder != null) {
+    if (_currentOrder != null) {
       clearOrderSession();
     }
     newOrder(null, id);
@@ -231,6 +231,7 @@ class Shop with ChangeNotifier {
   ShopData? get shopData => _shopData;
   ShopMenu? get shopMenu => _shopMenu;
   String? get myTableNumber => _myTableNumber;
+  Order? get currentOrder => _currentOrder;
 
   Future<void> getShop() async {
     // dummy data
@@ -336,9 +337,9 @@ class Shop with ChangeNotifier {
         isDineIn: true,
         isTakeAway: true,
         isPreferred: false,
-        category: "Appetisers",
-        subcategory: "Salad",
-        tags: ["Salad"],
+        category: "Main Course",
+        subcategory: "Steaks",
+        tags: ["Steaks"],
         options: [
           const MenuItemOption(
             "Sauce",
@@ -431,7 +432,7 @@ class Shop with ChangeNotifier {
     if (_currentOrder == null) return;
     _currentOrder!.orderItems.add(
       OrderItem(
-        id: "",
+        id: createCryptoRandomString(24),
         shopId: shopId,
         isDineIn: isDineIn,
         tableNumber: _myTableNumber ?? "",
@@ -446,16 +447,23 @@ class Shop with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
-    if (orderSessionId == null) {
-      var values = List<int>.generate(24, (i) => Random.secure().nextInt(256));
+  Future<void> removeItemFromOrderSession(
+    String id,
+  ) async {
+    if (_currentOrder == null) return;
+    _currentOrder!.orderItems.removeWhere((element) => element.id == id);
+    notifyListeners();
+  }
 
-      orderSessionId = base64Url.encode(values);
-    }
+  Future<void> submitOrderItems(List<String> selectedOrderItems) async {
+
+  }
+
+  Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
     _currentOrder = Order(
-      id: orderSessionId,
+      id: orderSessionId ?? createCryptoRandomString(12),
       shopId: shopData!.id,
-      userId: _auth!.address,
+      userId: _auth!.address!,
       orderItems: [],
       tableNumber: tableNumber ?? "",
       remarks: "",
@@ -472,5 +480,12 @@ class Shop with ChangeNotifier {
   void clearOrderSession() {
     _currentOrder = null;
     _myTableNumber = null;
+  }
+
+  static String createCryptoRandomString([int length = 32]) {
+    var values =
+        List<int>.generate(length, (i) => Random.secure().nextInt(256));
+
+    return base64Url.encode(values);
   }
 }

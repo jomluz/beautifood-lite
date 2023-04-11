@@ -9,7 +9,7 @@ services:
     labels:
       caddy: app.lite.beautifood.io
       caddy.reverse_proxy: "{{upstreams 80}}"
-  networks:
+networks:
   default:
     external:
       name: caddy
