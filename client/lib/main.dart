@@ -1,7 +1,23 @@
+import 'package:beautifood_lite/providers/auth.dart';
+import 'package:beautifood_lite/providers/shop.dart';
+import 'package:beautifood_lite/router/route_information_parser.dart';
+import 'package:beautifood_lite/router/router_delegate.dart';
+import 'package:beautifood_lite/theme/colors.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  // Override behavior methods and getters like dragDevices
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }
 
 class MyApp extends StatelessWidget {
@@ -10,28 +26,29 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => Auth(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Shop>(
+          create: (_) => Shop(),
+          update: (ctx, auth, menu) => menu ?? Shop(),
+        ),
+      ],
+      builder: (context, child) => MaterialApp.router(
+        title: 'Beautifood',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: ThemeColors.primarySwatch,
+              backgroundColor: Colors.white10),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        scrollBehavior: MyCustomScrollBehavior(),
+        routeInformationParser: AppRouteInformationParser(),
+        routerDelegate: AppRouterDelegate(Provider.of<Auth>(context),
+            Provider.of<Shop>(context)),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
