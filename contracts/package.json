@@ -6,7 +6,7 @@
   "scripts": {
     "deploy": "npx hardhat deploy",
     "clean": "npx hardhat clean",
-    "compile": "npx hardhat compile",
+    "compile": "npx hardhat compile && cp -r artifacts/contracts ../server/contracts",
     "accounts": " npx hardhat accounts",
     "verify": "npx hardhat verify",
     "node:polygon": "./node.sh polygon",
