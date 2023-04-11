@@ -1,0 +1,15 @@
+version: '3'
+services:
+  client:
+    container_name: beautifood-lite-client
+    restart: unless-stopped
+    expose:
+      - 80
+    image: registry-intl.ap-southeast-1.aliyuncs.com/swmeng/beautifood-lite-client:${BUILD_NUMBER}
+    labels:
+      caddy: app.beautifood-lite.io
+      caddy.reverse_proxy: "{{upstreams 80}}"
+  networks:
+  default:
+    external:
+      name: caddy

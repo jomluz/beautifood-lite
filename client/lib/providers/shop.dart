@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:beautifood_lite/providers/auth.dart';
 import 'package:flutter/foundation.dart';
 
 class MenuItemOption {
@@ -187,6 +191,7 @@ class OrderItemAttribute {
 }
 
 class Shop with ChangeNotifier {
+  Auth? _auth;
   String? _selectedShopId;
   List<MenuItem>? _menuItems;
   String? _selectedMenuItemId;
@@ -196,6 +201,11 @@ class Shop with ChangeNotifier {
   String? _myTableNumber;
   String? _orderSessionId;
   Order? _currentOrder;
+
+  Shop(Auth? auth) {
+    _auth = auth;
+  }
+  void updateAuth(Auth auth) => _auth = auth;
 
   List<MenuItem>? get menuItems => _menuItems;
   String? get selectedShopId => _selectedShopId;
@@ -220,7 +230,181 @@ class Shop with ChangeNotifier {
   ShopMenu? get shopMenu => _shopMenu;
   String? get myTableNumber => _myTableNumber;
 
-  Future<void> getShop() async {}
+  Future<void> getShop() async {
+    // dummy data
+    final allTimes = [
+      const MenuTime(0, 0, 24 * 60),
+      const MenuTime(1, 0, 24 * 60),
+      const MenuTime(2, 0, 24 * 60),
+      const MenuTime(3, 0, 24 * 60),
+      const MenuTime(4, 0, 24 * 60),
+      const MenuTime(5, 0, 24 * 60),
+      const MenuTime(6, 0, 24 * 60),
+    ];
+    _shopData = ShopData(
+      id: "123456",
+      name: "Jomluz Shop",
+      description: "Selling western delicacies",
+      address: "1, Jalan 2, Taman 3",
+      currency: const Currency("MYR", "RM"),
+    );
+    _shopMenu = ShopMenu(
+      id: "123457",
+      shopId: "123456",
+      title: "All-day menu",
+      description: "Shop all day menu",
+      categories: const [
+        MenuCategory("Appetisers", ["Salad", "Soup"]),
+        MenuCategory("Main Course", ["Pasta", "Steaks"]),
+        MenuCategory("Desserts", ["Cakes", "Ice Creams"]),
+      ],
+      availableTimes: allTimes,
+    );
+    _menuItems = [
+      MenuItem(
+        id: "000001",
+        menuId: "123457",
+        title: "Fruit Salad",
+        description: "Salad with seasonal fruits",
+        price: 14.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Appetisers",
+        subcategory: "Salad",
+        tags: ["Salad"],
+        options: [],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MenuItem(
+        id: "000002",
+        menuId: "123457",
+        title: "Mushroom Soup",
+        description: "Homemade fresh mushroom soup",
+        price: 14.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Appetisers",
+        subcategory: "Soup",
+        tags: ["Soup"],
+        options: [],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MenuItem(
+        id: "000003",
+        menuId: "123457",
+        title: "Spaghetti Carbonara",
+        description: "Signature Carbonara Pasta served with bacon and cheese.",
+        price: 19.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Main Course",
+        subcategory: "Pasta",
+        tags: ["Pasta"],
+        options: [],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MenuItem(
+        id: "000004",
+        menuId: "123457",
+        title: "Rib-eye Steak",
+        description: "Signature rib-eye steak served with sauce of your choice",
+        price: 14.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Appetisers",
+        subcategory: "Salad",
+        tags: ["Salad"],
+        options: [
+          const MenuItemOption(
+            "Sauce",
+            [
+              MenuItemOptionChoice("Mushroom", 0.0),
+              MenuItemOptionChoice("Black Pepper", 0.0),
+            ],
+          ),
+          const MenuItemOption(
+            "Cooking Option",
+            [
+              MenuItemOptionChoice("Medium", 0.0),
+              MenuItemOptionChoice("Medium-Well", 0.0),
+              MenuItemOptionChoice("Well Done", 0.0),
+            ],
+          ),
+        ],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MenuItem(
+        id: "000005",
+        menuId: "123457",
+        title: "Baked Cheese Cake",
+        description: "Daily fresh baked cheese cake",
+        price: 9.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Desserts",
+        subcategory: "Cakes",
+        tags: ["Cakes"],
+        options: [],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      MenuItem(
+        id: "000006",
+        menuId: "123457",
+        title: "Matcha Ice Cream",
+        description: "Matcha Ice Cream, the prefect dessert for your day.",
+        price: 14.99,
+        inStock: true,
+        isDineIn: true,
+        isTakeAway: true,
+        isPreferred: false,
+        category: "Desserts",
+        subcategory: "Ice Creams",
+        tags: ["Ice Creams"],
+        options: [],
+        otherAttributes: [],
+        imageUrls: [],
+        availableTimes: allTimes,
+        index: 0,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    ];
+  }
 
   List<MenuItem> getCategoryFoodItems(String category) {
     return menuItems
@@ -234,22 +418,21 @@ class Shop with ChangeNotifier {
   }
 
   Future<void> addItemToOrderSession(
-    String shopId,
-    String title,
-    String menuItemId,
-    bool isDineIn,
-    int quantity,
-    List<OrderItemAttribute> otherAttributes,
-    String remarks,
-    double subtotal
-  ) async {
+      String shopId,
+      String title,
+      String menuItemId,
+      bool isDineIn,
+      int quantity,
+      List<OrderItemAttribute> otherAttributes,
+      String remarks,
+      double subtotal) async {
     if (_currentOrder == null) return;
     _currentOrder!.orderItems.add(
       OrderItem(
         id: "",
         shopId: shopId,
         isDineIn: isDineIn,
-        tableNumber: _myTableNumber??"",
+        tableNumber: _myTableNumber ?? "",
         name: title,
         menuItemId: menuItemId,
         quantity: quantity,
@@ -261,7 +444,20 @@ class Shop with ChangeNotifier {
   }
 
   Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
+    if (orderSessionId == null) {
+      var values = List<int>.generate(24, (i) => Random.secure().nextInt(256));
 
+      orderSessionId = base64Url.encode(values);
+    }
+    _currentOrder = Order(
+      id: orderSessionId,
+      shopId: shopData!.id,
+      userId: _auth!.address,
+      orderItems: [],
+      tableNumber: tableNumber ?? "",
+      remarks: "",
+      status: [],
+    );
   }
 
   void clear() {

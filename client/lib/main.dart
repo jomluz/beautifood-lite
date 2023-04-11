@@ -32,8 +32,8 @@ class MyApp extends StatelessWidget {
           create: (_) => Auth(),
         ),
         ChangeNotifierProxyProvider<Auth, Shop>(
-          create: (_) => Shop(),
-          update: (ctx, auth, menu) => menu ?? Shop(),
+          create: (_) => Shop(null),
+          update: (ctx, auth, menu) => (menu?..updateAuth(auth))?? Shop(auth),
         ),
       ],
       builder: (context, child) => MaterialApp.router(
