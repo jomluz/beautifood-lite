@@ -39,10 +39,10 @@ pipeline {
               }
           }
         }
-        stage('Notify Webhook') {
-          steps {
-            sh ('curl -H \"Content-Type: application/json\" -d \'{\"username\": \"Jenkins\", \"content\": \"Build \'\"$BUILD_NUMBER\"\' succeed!\"}\' $DISCORD_WEBHOOK')
-          }
-        }
+        // stage('Notify Webhook') {
+        //   steps {
+        //     sh ('curl -H \"Content-Type: application/json\" -d \'{\"username\": \"Jenkins\", \"content\": \"Build \'\"$BUILD_NUMBER\"\' succeed!\"}\' $DISCORD_WEBHOOK')
+        //   }
+        // }
       }
 }
