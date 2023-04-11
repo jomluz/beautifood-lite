@@ -58,14 +58,14 @@ module.exports = {
       accounts: [
         process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
         process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
-      ]
+      ],
     },
     l2: {
       url: "http://0.0.0.0:8565/",
       accounts: [
-        process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
         process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
-      ]
+        process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
+      ],
     },
 
     mainnet: {
@@ -121,12 +121,12 @@ module.exports = {
     deployerAddr: {
       default: 0,
       localhost: 0,
-      l1: 0
+      l1: 0,
     },
     governorAddr: {
       default: 1,
       localhost: 1,
-      l1: 1
+      l1: 1,
     },
   },
   gasReporter: {
