@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:walletconnect_dart/walletconnect_dart.dart';
 import 'package:walletconnect_qrcode_modal_dart/walletconnect_qrcode_modal_dart.dart';
 import 'package:walletconnect_secure_storage/walletconnect_secure_storage.dart';
@@ -57,18 +58,21 @@ class Auth with ChangeNotifier {
   // Define a session storage
   final _sessionStorage = WalletConnectSecureStorage();
   WalletConnect? _connector;
-  final _ethereum = Web3Client(
-    'https://goerli.infura.io/v3/0db053799f0e48e99357b6dce022b1e7',
+  final _rpcClient = Web3Client(
+    'https://bfdrpc.wmtech.cc',
     http.Client(),
   );
   WalletConnectQrCodeModal? _qrCodeModal;
   EthereumWalletConnectProvider? _provider;
   SessionStatus? _session;
+  String? _uri;
 
   bool get isAuth => _session != null;
   String? get account => _session?.accounts[0];
   String? get networkName =>
       _session != null ? _getNetworkName(_session!.chainId) : null;
+  Web3Client get rpcClient => _rpcClient;
+  EthereumWalletConnectProvider? get provider => _provider;
 
   Future<bool> tryAutoLogin() async {
     try {
@@ -95,12 +99,21 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> openWalletApp() async => await _qrCodeModal?.openWalletApp();
+  Future<void> openWalletApp() async {
+    final isWebMobile = kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android);
+    if (isWebMobile) {
+      launchUrlString(_uri!, mode: LaunchMode.externalApplication);
+    } else {
+      await _qrCodeModal?.openWalletApp();
+    }
+  }
 
   Future<double?> getBalance() async {
     if (_connector == null) return null;
     final address = EthereumAddress.fromHex(_connector!.session.accounts[0]);
-    final amount = await _ethereum.getBalance(address);
+    final amount = await _rpcClient.getBalance(address);
     return amount.getValueInUnit(EtherUnit.ether).toDouble();
   }
 
@@ -156,34 +169,62 @@ class Auth with ChangeNotifier {
         ],
       ),
     );
-    _qrCodeModal = WalletConnectQrCodeModal(connector: _connector);
-    // Subscribe to events
-    _qrCodeModal!.registerListeners(
-      onConnect: (session) => print('Connected: $session'),
-      onSessionUpdate: (WCSessionUpdateResponse response) {
-        print('Session updated: $response');
-      },
-      onDisconnect: () {
-        _session = null;
-        print('Disconnected');
+    final isWebMobile = kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android);
+    if (isWebMobile) {
+      final session =
+          await _connector!.createSession(onDisplayUri: (uri) async {
+        _uri = uri;
+        await launchUrlString(uri, mode: LaunchMode.externalApplication);
+      });
+      _connector!.on('connect', (session) {
+        _session = _session;
         notifyListeners();
-      },
-    );
+      });
+      _connector!.on('session_update', (payload) {
+        _session = payload as SessionStatus?;
+        notifyListeners();
+      });
+      _connector!.on('disconnect', (payload) {
+        _session = null;
+        notifyListeners();
+      });
 
-    // Create QR code modal and connect to a wallet, connector returns WalletConnect
-    // session which can be saved and restored.
-    final session = await _qrCodeModal!
-        .connect(context)
-        // Errors can also be caught from connector, eg. session cancelled
-        .catchError((error) {
-      // Handle error here
-      debugPrint(error);
-      return null;
-    });
-    if (session == null) return;
-    print(session.accounts[0]);
-    print(session.chainId);
-    _session = session;
+      print(session.accounts[0]);
+      print(session.chainId);
+      _session = session;
+    } else {
+      _qrCodeModal = WalletConnectQrCodeModal(connector: _connector);
+      // Subscribe to events
+      _qrCodeModal!.registerListeners(
+        onConnect: (session) => print('Connected: $session'),
+        onSessionUpdate: (WCSessionUpdateResponse response) {
+          print('Session updated: $response');
+        },
+        onDisconnect: () {
+          _session = null;
+          print('Disconnected');
+          notifyListeners();
+        },
+      );
+
+      // Create QR code modal and connect to a wallet, connector returns WalletConnect
+      // session which can be saved and restored.
+      final session = await _qrCodeModal!
+          .connect(context)
+          // Errors can also be caught from connector, eg. session cancelled
+          .catchError((error) {
+        // Handle error here
+        debugPrint(error);
+        return null;
+      });
+      if (session == null) return;
+      print(session.accounts[0]);
+      print(session.chainId);
+      _session = session;
+    }
+
     _provider = EthereumWalletConnectProvider(_connector!);
     notifyListeners();
   }
@@ -211,7 +252,8 @@ class Auth with ChangeNotifier {
 
     // Sign the transaction
     try {
-      final txBytes = await _ethereum.sendTransaction(credentials, transaction);
+      final txBytes =
+          await _rpcClient.sendTransaction(credentials, transaction);
       return txBytes;
     } catch (e) {
       debugPrint('Error: $e');
@@ -224,7 +266,17 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> killSession() async {
-    await _qrCodeModal?.killSession();
+    final isWebMobile = kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android);
+    if (isWebMobile) {
+      await _connector?.killSession();
+    } else {
+      await _connector?.killSession();
+      await _qrCodeModal?.killSession();
+    }
+    await _sessionStorage.removeSession();
+    notifyListeners();
   }
 
   Future<String?> signMessage(String message) async {

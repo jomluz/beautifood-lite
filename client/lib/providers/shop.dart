@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:beautifood_lite/providers/auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/web3dart.dart';
 
 class MenuItemOption {
   final String name;
@@ -235,6 +237,20 @@ class Shop with ChangeNotifier {
 
   Future<void> getShop() async {
     // dummy data
+    final abi =
+        await rootBundle.loadString('assets/contracts/BeautifoodL2.abi.json');
+    final contract = DeployedContract(
+      ContractAbi.fromJson(abi, 'BeautifoodL2'),
+      EthereumAddress.fromHex('0xAfC45Ef7d4BA01c531E3F26676832B81dD77bD4B'),
+    );
+    final function = contract.function("getMenu");
+    final result = await _auth!.rpcClient.call(
+        contract: contract,
+        function: function,
+        params: [
+          EthereumAddress.fromHex('0x41C929802517f5CE1eD0d6684B579F6E44d277b5')
+        ]);
+    print(result);
     final allTimes = [
       const MenuTime(0, 0, 24 * 60),
       const MenuTime(1, 0, 24 * 60),
@@ -456,7 +472,41 @@ class Shop with ChangeNotifier {
   }
 
   Future<void> submitOrderItems(List<String> selectedOrderItems) async {
+    final abi =
+        await rootBundle.loadString('assets/contracts/BeautifoodL2.abi.json');
+    final contract = DeployedContract(
+      ContractAbi.fromJson(abi, 'BeautifoodL2'),
+      EthereumAddress.fromHex('0xAfC45Ef7d4BA01c531E3F26676832B81dD77bD4B'),
+    );
+    final function = contract.function("submitOrder");
+    print("Preparing to send");
+    final transaction = Transaction.callContract(
+      from: EthereumAddress.fromHex(_auth!.address!),
+      contract: contract,
+      function: function,
+      parameters: [
+        [
+          [BigInt.from(0), BigInt.from(2)],
+          [BigInt.from(1), BigInt.from(3)],
+        ],
+        EthereumAddress.fromHex("0x41C929802517f5CE1eD0d6684B579F6E44d277b5")
+      ],
+      gasPrice: EtherAmount.inWei(BigInt.one),
+      maxGas: 100000,
+    );
+    print("Preparing to send.");
+    final credentials =
+        WalletConnectEthereumCredentials(provider: _auth!.provider!);
 
+    // Sign the transaction
+    print("Preparing to send..");
+    try {
+      final txBytes =
+          await _auth!.rpcClient.sendTransaction(credentials, transaction);
+      print(txBytes);
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
   }
 
   Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
