@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 import "./OwnableERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Beautifood core contract L2
@@ -82,21 +83,27 @@ contract BeautifoodL2 is Ownable {
     }
 
     function getTotalPriceOfOrder(
-        OrderItem[] calldata order,
+        OrderItem[] memory order,
         address seller
-    ) public view returns (uint256 totalAmount) {
+    ) public view returns (uint256) {
+        uint256 totalAmount;
         for (uint256 i = 0; i < order.length; i++) {
             _checkValidItem(seller, order[i].id);
-            uint256 itemTotal = menuListBySeller[msg.sender][order[i].id]
-                .price * order[i].qty;
+            uint256 itemTotal = menuListBySeller[seller][order[i].id].price *
+                order[i].qty;
             totalAmount += itemTotal;
         }
+        return totalAmount;
+    }
+
+    function getMenu(address seller) external view returns (MenuItem[] memory) {
+        return menuListBySeller[seller];
     }
 
     // add privacy here using private networks
-    function submitOrder(OrderItem[] calldata order, address seller) external {
+    function submitOrder(OrderItem[] memory order, address seller) external {
         uint256 amountToTransfer = getTotalPriceOfOrder(order, seller);
-        OwnableERC20(paymentTokenAddr).transferFrom(
+        IERC20(paymentTokenAddr).transferFrom(
             msg.sender,
             address(this),
             amountToTransfer
