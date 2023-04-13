@@ -172,7 +172,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                                               context: context,
                                               builder: (ctx) => ShowQRCodeDialog(
                                                   data:
-                                                      'https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}'),
+                                                      'https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}', tableNo: shop.myTableNumber,),
                                             );
                                           },
                                           icon: const Icon(
