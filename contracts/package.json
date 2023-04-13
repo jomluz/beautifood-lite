@@ -45,5 +45,8 @@
   },
   "author": "Carlos Ramos",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@zetachain/zevm-protocol-contracts": "^0.0.1"
+  }
 }
