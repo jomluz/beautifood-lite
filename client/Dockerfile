@@ -26,7 +26,7 @@ RUN flutter doctor
 WORKDIR /app
 COPY . .
 ARG BUILD_NUM
-# RUN sed -i "s/DEBUG/$BUILD_NUM/" ./lib/env.dart
+RUN sed -i "s/DEBUG/$BUILD_NUM/" ./lib/env.dart
 # RUN sed -i "s/:\/\/localhost:8000/s:\/\/app.beautifood.io/" ./lib/env.dart
 RUN flutter pub get
 RUN flutter build web --release

@@ -1,3 +1,4 @@
+import 'package:beautifood_lite/env.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -59,7 +60,7 @@ class Auth with ChangeNotifier {
   final _sessionStorage = WalletConnectSecureStorage();
   WalletConnect? _connector;
   final _rpcClient = Web3Client(
-    'https://bfdrpc.wmtech.cc',
+    environment['rpcUrl']!,
     http.Client(),
   );
   WalletConnectQrCodeModal? _qrCodeModal;

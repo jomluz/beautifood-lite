@@ -13,6 +13,7 @@ Flutter Installed and the command `flutter doctor` completes without error. Use 
 3. `flutter run` or `flutter run -d <your-preferred-device>` to run with your preferred device. You would also want to fix to a permanent port with `flutter run -d chrome --web-port 5001`
    1. You can see list of devices you can use through `flutter devices`.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+
+## Docker 
+Use the dockerfile provided to build a web deployment container. Nginx is used as the http server.
