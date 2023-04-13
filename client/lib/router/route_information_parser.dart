@@ -26,7 +26,7 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
     } else if (uri.pathSegments.length == 2) {
       final first = uri.pathSegments[0].toLowerCase();
       final second = uri.pathSegments[1].toLowerCase();
-      if (first == 'shop' && second.length == 24) {
+      if (first == 'shop') {
         return ShopPath(second, uri.queryParameters['tableNo'],
             uri.queryParameters['sessionId']);
       // } else if (first == 'emailverification') {

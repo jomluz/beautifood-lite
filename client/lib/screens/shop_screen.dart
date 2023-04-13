@@ -63,7 +63,11 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
 
   Future<void> getData(Shop shop) async {
     if (shop.shopData == null) {
-      await shop.getShop();
+      try {
+        await shop.getShop();
+      } catch (e) {
+        return;
+      }
     }
   }
 

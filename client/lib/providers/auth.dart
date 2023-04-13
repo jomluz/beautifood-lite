@@ -91,6 +91,18 @@ class Auth with ChangeNotifier {
           ],
         ),
       );
+      _connector!.on('connect', (session) {
+        _session = _session;
+        notifyListeners();
+      });
+      _connector!.on('session_update', (payload) {
+        _session = payload as SessionStatus?;
+        notifyListeners();
+      });
+      _connector!.on('disconnect', (payload) {
+        _session = null;
+        notifyListeners();
+      });
       _session = await _connector!.connect();
       _provider = EthereumWalletConnectProvider(_connector!);
       return true;

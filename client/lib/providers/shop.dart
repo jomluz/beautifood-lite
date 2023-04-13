@@ -202,6 +202,7 @@ class Shop with ChangeNotifier {
 
   String? _myTableNumber;
   Order? _currentOrder;
+  final List<String> _submittedTxns = [];
 
   Shop(Auth? auth) {
     _auth = auth;
@@ -212,6 +213,11 @@ class Shop with ChangeNotifier {
   String? get selectedShopId => _selectedShopId;
   set selectedShopId(String? id) {
     _selectedShopId = id;
+    if (id == null) {
+      _shopData = null;
+      _shopMenu = null;
+      _menuItems = null;
+    }
     notifyListeners();
   }
 
@@ -237,6 +243,7 @@ class Shop with ChangeNotifier {
 
   Future<void> getShop() async {
     // dummy data
+    if (_selectedShopId == null) return;
     final abi =
         await rootBundle.loadString('assets/contracts/BeautifoodL2.abi.json');
     final contract = DeployedContract(
@@ -245,11 +252,12 @@ class Shop with ChangeNotifier {
     );
     final function = contract.function("getMenu");
     final result = await _auth!.rpcClient.call(
-        contract: contract,
-        function: function,
-        params: [
-          EthereumAddress.fromHex('0x41C929802517f5CE1eD0d6684B579F6E44d277b5')
-        ]);
+      contract: contract,
+      function: function,
+      params: [
+        EthereumAddress.fromHex(_selectedShopId!),
+      ],
+    );
     print(result);
     final allTimes = [
       const MenuTime(0, 0, 24 * 60),
@@ -489,7 +497,8 @@ class Shop with ChangeNotifier {
           [BigInt.from(0), BigInt.from(2)],
           [BigInt.from(1), BigInt.from(3)],
         ],
-        EthereumAddress.fromHex("0x41C929802517f5CE1eD0d6684B579F6E44d277b5")
+        EthereumAddress.fromHex(
+            _selectedShopId!) //0x41C929802517f5CE1eD0d6684B579F6E44d277b5
       ],
       gasPrice: EtherAmount.inWei(BigInt.one),
       maxGas: 100000,
@@ -503,7 +512,15 @@ class Shop with ChangeNotifier {
     try {
       final txBytes =
           await _auth!.rpcClient.sendTransaction(credentials, transaction);
+      _currentOrder!.orderItems
+          .where(
+            (element) => selectedOrderItems.contains(element.id),
+          )
+          .forEach(
+            (element) => element.confirmedTime = DateTime.now(),
+          );
       print(txBytes);
+      _submittedTxns.add(txBytes);
     } catch (e) {
       debugPrint('Error: $e');
     }
@@ -524,12 +541,17 @@ class Shop with ChangeNotifier {
 
   void clear() {
     _shopData = null;
-    notifyListeners();
+    _selectedShopId = null;
+    _selectedMenuItemId = null;
+    _shopMenu = null;
+    _menuItems = null;
+    clearOrderSession();
   }
 
   void clearOrderSession() {
     _currentOrder = null;
     _myTableNumber = null;
+    notifyListeners();
   }
 
   static String createCryptoRandomString([int length = 32]) {

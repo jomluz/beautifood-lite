@@ -145,11 +145,11 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
       pages: stack,
       onPopPage: (route, result) {
         if (!route.didPop(result)) return false;
-        if(_appState.isShowCart) {
+        if (_appState.isShowCart) {
           _appState.isShowCart = false;
         } else if (_shopService.selectedMenuItemId != null) {
           _shopService.selectedMenuItemId = null;
-        } else if (_shopService.shopData != null) {
+        } else if (_shopService.selectedShopId != null) {
           _shopService.selectedShopId = null;
         }
         notifyListeners();
@@ -180,6 +180,16 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
     if (configuration is MenuItemPath) {
       _shopService.selectedShopId = configuration.shopId;
       _shopService.selectedMenuItemId = configuration.menuItemId;
+    }
+    if (configuration is HomePath) {
+      _shopService.selectedShopId = null;
+      _shopService.selectedMenuItemId = null;
+      _shopService.clear();
+    }
+    if (configuration is AuthPath) {
+      _shopService.selectedShopId = null;
+      _shopService.selectedMenuItemId = null;
+      _shopService.clear();
     }
     // if (configuration is EmailVerificationPath) {
     //   _emailVerificationToken = configuration.token;
