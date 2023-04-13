@@ -537,6 +537,7 @@ class Shop with ChangeNotifier {
           );
       print(txBytes);
       _submittedTxns.add(txBytes);
+      notifyListeners();
     } catch (e) {
       debugPrint('Error: $e');
     }
