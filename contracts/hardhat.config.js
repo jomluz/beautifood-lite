@@ -72,6 +72,14 @@ module.exports = {
         process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
       ],
     },
+    athens: {
+      url: `https://api.athens2.zetachain.com/evm`,
+      accounts: [
+        process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
+        process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
+      ],
+      chainId: 7001,
+    },
     l2: {
       url: "http://0.0.0.0:8565/",
       accounts: [
@@ -79,7 +87,14 @@ module.exports = {
         process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
       ],
     },
-
+    goerli: {
+      url: `https://rpc.ankr.com/eth_goerli`,
+      accounts: [
+        process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
+        process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
+      ],
+      chainId: 97,
+    },
     mainnet: {
       url: `${process.env.MAINNET_PROVIDER_URL}`,
       accounts: [
@@ -113,7 +128,8 @@ module.exports = {
       chainId: 137,
     },
     bscTestnet: {
-      url: `${process.env.BSCTEST_PROVIDER_URL}`,
+      //url: `${process.env.BSCTEST_PROVIDER_URL}`,
+      url: `https://data-seed-prebsc-1-s1.binance.org:8545`,
       accounts: [
         process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
         process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],

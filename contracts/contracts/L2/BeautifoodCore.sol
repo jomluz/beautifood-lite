@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 import "./OwnableERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@zetachain/zevm-protocol-contracts/contracts/interfaces/IZRC20.sol";
 
 /**
  * @title Beautifood core contract L2
@@ -103,7 +104,8 @@ contract BeautifoodL2 is Ownable {
     // add privacy here using private networks
     function submitOrder(OrderItem[] memory order, address seller) external {
         uint256 amountToTransfer = getTotalPriceOfOrder(order, seller);
-        IERC20(paymentTokenAddr).transferFrom(
+        //IERC20(paymentTokenAddr).transferFrom(
+        IZRC20(paymentTokenAddr).transferFrom(
             msg.sender,
             address(this),
             amountToTransfer

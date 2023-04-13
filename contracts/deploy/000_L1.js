@@ -6,7 +6,8 @@ const {
   getTokenAddresses,
   isLocalHost,
   isFork,
-  isL1,
+  //isL1,
+  isZetachain,
 } = require("../utils/helpers");
 const {
   deployWithConfirmation,
@@ -22,5 +23,6 @@ const main = async () => {
 };
 
 main.id = "000_core";
-main.skip = () => !isL1;
+//main.skip = () => !isL1;
+main.skip = () => !isZetachain;
 module.exports = main;

@@ -6,7 +6,8 @@ const {
   getTokenAddresses,
   isLocalHost,
   isFork,
-  isL2,
+  //isL2,
+  isGorli,
 } = require("../utils/helpers");
 const {
   deployWithConfirmation,
@@ -19,5 +20,6 @@ const main = async () => {
 };
 
 main.id = "000_core";
-main.skip = () => !isL2;
+//main.skip = () => !isL2;
+main.skip = () => !isGorli;
 module.exports = main;
