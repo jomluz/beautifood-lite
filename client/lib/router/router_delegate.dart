@@ -181,15 +181,9 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
       _shopService.selectedShopId = configuration.shopId;
       _shopService.selectedMenuItemId = configuration.menuItemId;
     }
-    if (configuration is HomePath) {
-      _shopService.selectedShopId = null;
-      _shopService.selectedMenuItemId = null;
-      _shopService.clear();
-    }
     if (configuration is AuthPath) {
       _shopService.selectedShopId = null;
       _shopService.selectedMenuItemId = null;
-      _shopService.clear();
     }
     // if (configuration is EmailVerificationPath) {
     //   _emailVerificationToken = configuration.token;
