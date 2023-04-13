@@ -38,7 +38,7 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
       final first = uri.pathSegments[0].toLowerCase();
       final second = uri.pathSegments[1].toLowerCase();
       final third = uri.pathSegments[2].toLowerCase();
-      if (first == 'shop' && second.length == 24 && third.length == 24) {
+      if (first == 'shop') {
         return MenuItemPath(second, third);
       }
     }

@@ -202,6 +202,7 @@ class Shop with ChangeNotifier {
 
   String? _myTableNumber;
   Order? _currentOrder;
+  String? _currentOrderId;
   final List<String> _submittedTxns = [];
 
   Shop(Auth? auth) {
@@ -232,7 +233,7 @@ class Shop with ChangeNotifier {
     if (_currentOrder != null) {
       clearOrderSession();
     }
-    newOrder(null, id);
+    _currentOrderId = id;
     notifyListeners();
   }
 
@@ -303,7 +304,9 @@ class Shop with ChangeNotifier {
         tags: ["Salad"],
         options: [],
         otherAttributes: [],
-        imageUrls: ["https://ichef.bbci.co.uk/food/ic/food_16x9_832/recipes/fresh_fruit_salad_61942_16x9.jpg"],
+        imageUrls: [
+          "https://ichef.bbci.co.uk/food/ic/food_16x9_832/recipes/fresh_fruit_salad_61942_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -324,7 +327,9 @@ class Shop with ChangeNotifier {
         tags: ["Soup"],
         options: [],
         otherAttributes: [],
-        imageUrls: ["https://www.simplyrecipes.com/thmb/kcYRrWND4fvAA13DHU52HN-vpec=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__simply_recipes__uploads__2014__12__cream-of-mushroom-soup-horiz-d-1600-35c4020aaa6543e7b6fcecf5e30865e0.jpg"],
+        imageUrls: [
+          "https://food-images.files.bbci.co.uk/food/recipes/mushroomsoup_77788_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -345,7 +350,9 @@ class Shop with ChangeNotifier {
         tags: ["Pasta"],
         options: [],
         otherAttributes: [],
-        imageUrls: ["https://www.foodandwine.com/thmb/0U-xiQNy_ahrPzy22DlinwqT1f0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/hd-fw200304_101spaghetti-3e165ba8cd44491fa3357b6ba944bdbe.jpg"],
+        imageUrls: [
+          "https://www.culinaryhill.com/wp-content/uploads/2021/12/Spaghetti-Carbonara-Culinary-Hill-1200x800-1.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -382,7 +389,9 @@ class Shop with ChangeNotifier {
           ),
         ],
         otherAttributes: [],
-        imageUrls: ["https://sipbitego.com/wp-content/uploads/2022/05/Medium-Rare-Grilled-Ribeye-Steak-Recipe-Sip-Bite-Go.jpg"],
+        imageUrls: [
+          "https://ichef.bbci.co.uk/food/ic/food_16x9_832/recipes/rib-eye_steak_with_61963_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -403,7 +412,9 @@ class Shop with ChangeNotifier {
         tags: ["Cakes"],
         options: [],
         otherAttributes: [],
-        imageUrls: ["https://img.bestrecipes.com.au/UqgwcQQm/w1200-h630-cfill/br/2019/03/1980-basic-baked-cheesecake-951228-1.jpg"],
+        imageUrls: [
+          "https://i0.wp.com/www.onceuponachef.com/images/2017/12/cheesecake.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -424,13 +435,18 @@ class Shop with ChangeNotifier {
         tags: ["Ice Creams"],
         options: [],
         otherAttributes: [],
-        imageUrls: ["https://upload.wikimedia.org/wikipedia/commons/4/46/Matcha_ice_cream_001.jpg"],
+        imageUrls: [
+          "https://upload.wikimedia.org/wikipedia/commons/4/46/Matcha_ice_cream_001.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
     ];
+    if (_currentOrder == null && _currentOrderId != null) {
+      await newOrder(_myTableNumber, _currentOrderId);
+    }
   }
 
   List<MenuItem> getCategoryFoodItems(String category) {
@@ -536,6 +552,7 @@ class Shop with ChangeNotifier {
       remarks: "",
       status: [],
     );
+    _myTableNumber = tableNumber;
     notifyListeners();
   }
 
