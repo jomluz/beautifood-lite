@@ -2,6 +2,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@zetachain/protocol-contracts/contracts/ZetaInteractor.sol";
 import "@zetachain/protocol-contracts/contracts/interfaces/ZetaInterfaces.sol";
+import "@zetachain/zevm-protocol-contracts/contracts/interfaces/IZRC20.sol";
 
 /**
  * @title Beautifood core contract L1
@@ -38,7 +39,8 @@ contract Beautifood is ZetaInteractor, ZetaReceiver {
         uint256 crossChaindestinationGasLimit
     ) external {
         // TODO: check for oracle price of asset in eth for gas
-        IERC20(zetaAddr).transferFrom(msg.sender, address(this), amount);
+        //IERC20(zetaAddr).transferFrom(msg.sender, address(this), amount);
+        IZRC20(zetaAddr).transferFrom(msg.sender, address(this), amount);
 
         emit DepositZeta(msg.sender, amount);
 

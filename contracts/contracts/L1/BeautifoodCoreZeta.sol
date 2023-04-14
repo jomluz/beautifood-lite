@@ -10,7 +10,7 @@ import "@zetachain/protocol-contracts/contracts/ZetaInteractor.sol";
  */
 
 contract BeautifoodZeta is ZetaReceiver, ZetaInteractor {
-    using SafeERC20 for IERC20;
+    //using SafeERC20 for IERC20;
 
     event DepositETH(address sender, uint256 amount);
     event DepositERC20(address sender, address token, uint256 amount);
