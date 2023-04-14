@@ -6,6 +6,7 @@ const isPolygon = hre.network.name === "polygon" || forkedNetwork == "polygon";
 const isMainnet = hre.network.name === "mainnet" || forkedNetwork == "mainnet";
 const isL1 = hre.network.name === "l1";
 const isZetachain = hre.network.name === "athens";
+const isGoerli = hre.network.name === "goerli";
 const isL2 = hre.network.name === "l2";
 const isLocalHost = hre.network.name === "hardhat";
 console.log(hre.network.name);
@@ -47,4 +48,5 @@ module.exports = {
   isL1,
   isZetachain,
   isL2,
+  isGoerli,
 };

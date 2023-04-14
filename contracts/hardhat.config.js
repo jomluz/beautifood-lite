@@ -93,7 +93,7 @@ module.exports = {
         process.env.DEPLOYER_PRIVATE_KEY || privateKeys[2],
         process.env.GOVERNOR_PRIVATE_KEY || privateKeys[1],
       ],
-      chainId: 97,
+      chainId: 5,
     },
     mainnet: {
       url: `${process.env.MAINNET_PROVIDER_URL}`,

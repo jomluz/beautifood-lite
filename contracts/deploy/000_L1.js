@@ -18,7 +18,10 @@ const {
 const deployMockChainlinkPriceFeed = async () => {};
 
 const main = async () => {
-  await deployWithConfirmation("Beautifood");
+  await deployWithConfirmation("BeautifoodZeta", [
+    "0x00007d0BA516a2bA02D77907d3a1348C1187Ae62",
+    "0x000080383847bd75f91c168269aa74004877592f",
+  ]);
   await deployWithConfirmation("USDC", ["US Dollar", "USDC"], "MockERC20");
 };
 
