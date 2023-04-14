@@ -9,7 +9,8 @@ import 'package:beautifood_lite/widgets/order_session_dialog.dart';
 import 'package:beautifood_lite/widgets/show_qr_code_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+import 'package:badges/badges.dart' as badges;
+import 'package:share_plus/share_plus.dart';
 
 class ShopPath extends AppRoutePath {
   final String id;
@@ -27,10 +28,15 @@ class ShopPath extends AppRoutePath {
 }
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({Key? key, required this.id, required this.onSelectMenuItem})
-      : super(key: key);
+  const ShopScreen({
+    Key? key,
+    required this.id,
+    required this.onSelectMenuItem,
+    required this.onShowCart,
+  }) : super(key: key);
   final String id;
   final Function(String) onSelectMenuItem;
+  final Function() onShowCart;
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -57,7 +63,11 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
 
   Future<void> getData(Shop shop) async {
     if (shop.shopData == null) {
-      await shop.getShop();
+      try {
+        await shop.getShop();
+      } catch (e) {
+        return;
+      }
     }
   }
 
@@ -98,8 +108,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                   child: Text('Shop Closed'),
                 );
               }
-              if (shop.orderSessionId ==
-                  null) {
+              if (shop.orderSessionId == null) {
                 if (Provider.of<Shop>(context, listen: false).myTableNumber !=
                     null) {
                   Future.delayed(
@@ -132,110 +141,110 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     controller: _scrollController,
                     slivers: [
                       SliverAppBar(
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(shop.shopData?.name ?? ''),
-                            if (Provider.of<Shop>(context).orderSessionId !=
-                                null)
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: AutoSizeText(
-                                          'Session: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
-                                          maxLines: 2,
-                                          textAlign: TextAlign.end,
-                                          minFontSize: 8,
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(shop.shopData?.name ?? ''),
+                              if (Provider.of<Shop>(context).orderSessionId !=
+                                  null)
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: AutoSizeText(
+                                            'Session: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
+                                            maxLines: 2,
+                                            textAlign: TextAlign.end,
+                                            minFontSize: 8,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: 24,
-                                      child: IconButton(
-                                        iconSize: 16,
-                                        splashRadius: 12,
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (ctx) => ShowQRCodeDialog(
-                                                data:
-                                                    'https://app.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}'),
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.qr_code,
+                                      SizedBox(
+                                        width: 24,
+                                        child: IconButton(
+                                          iconSize: 16,
+                                          splashRadius: 12,
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (ctx) => ShowQRCodeDialog(
+                                                  data:
+                                                      'https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId}', tableNo: shop.myTableNumber,),
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.qr_code,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: 24,
-                                      child: IconButton(
-                                        iconSize: 16,
-                                        splashRadius: 12,
-                                        onPressed: () {
-                                          Share.share(
-                                              'Join My Beautifood Order Session on ${shop.shopData?.name ?? ''}! https://app.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId} \n Session ID: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
-                                              subject:
-                                                  'Join Beautifood Order Session!');
-                                        },
-                                        icon: const Icon(
-                                          Icons.share,
+                                      SizedBox(
+                                        width: 24,
+                                        child: IconButton(
+                                          iconSize: 16,
+                                          splashRadius: 12,
+                                          onPressed: () {
+                                            Share.share(
+                                                'Join My Beautifood Order Session on ${shop.shopData?.name ?? ''}! https://app.lite.beautifood.io/#/shop/${widget.id}?sessionId=${Provider.of<Shop>(context, listen: false).orderSessionId} \n Session ID: ${Provider.of<Shop>(context, listen: false).orderSessionId}',
+                                                subject:
+                                                    'Join Beautifood Order Session!');
+                                          },
+                                          icon: const Icon(
+                                            Icons.share,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      width: 24,
-                                      child: IconButton(
-                                        iconSize: 16,
-                                        splashRadius: 12,
-                                        onPressed: () async {
-                                          final res = await showDialog(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              title:
-                                                  const Text('Are you sure?'),
-                                              content: const Text(
-                                                  'Are you sure to leave this order session?'),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(ctx).pop(),
-                                                  child: const Text('Cancel'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(ctx)
-                                                          .pop(true),
-                                                  child: const Text('Confirm'),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                          if (res != true) {
-                                            return;
-                                          }
-                                          if (!mounted) return;
-                                          Provider.of<Shop>(context,
-                                                  listen: false)
-                                              .clearOrderSession();
-                                        },
-                                        icon: const Icon(
-                                          Icons.exit_to_app,
+                                      SizedBox(
+                                        width: 24,
+                                        child: IconButton(
+                                          iconSize: 16,
+                                          splashRadius: 12,
+                                          onPressed: () async {
+                                            final res = await showDialog(
+                                              context: context,
+                                              builder: (ctx) => AlertDialog(
+                                                title:
+                                                    const Text('Are you sure?'),
+                                                content: const Text(
+                                                    'Are you sure to leave this order session?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(ctx).pop(),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(ctx)
+                                                            .pop(true),
+                                                    child:
+                                                        const Text('Confirm'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            if (res != true) {
+                                              return;
+                                            }
+                                            if (!mounted) return;
+                                            Provider.of<Shop>(context,
+                                                    listen: false)
+                                                .clearOrderSession();
+                                          },
+                                          icon: const Icon(
+                                            Icons.exit_to_app,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        expandedHeight: null,
-                        flexibleSpace: null
-                      ),
+                            ],
+                          ),
+                          expandedHeight: null,
+                          flexibleSpace: null),
                       SliverPersistentHeader(
                         pinned: true,
                         delegate: _SliverAppBarDelegate(
@@ -270,8 +279,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                               final categoryItems =
                                   shop.getCategoryFoodItems(category.name);
                               if (category.subcategories.isEmpty) {
-                                categoryItems.sort((a, b) =>
-                                    (a.index).compareTo(b.index));
+                                categoryItems.sort(
+                                    (a, b) => (a.index).compareTo(b.index));
                               }
                               return category.subcategories.isNotEmpty
                                   ? CustomScrollView(
@@ -286,8 +295,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                                                         subcategory)
                                                     .toList();
                                             subcategoryItems.sort((a, b) =>
-                                                (a.index)
-                                                    .compareTo(b.index));
+                                                (a.index).compareTo(b.index));
                                             return [
                                               SliverPersistentHeader(
                                                 pinned: true,
@@ -342,8 +350,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                             height: 46.0,
                             child: Center(
                               child: Text(
-                                'Copyright (c) 2022 WMS Tech. All rights reserved.',
-                                style: Theme.of(context).textTheme.caption,
+                                'Copyright (c) 2022 JOMLUZ Tech Sdn Bhd. All rights reserved.',
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             )),
                       ),
@@ -352,6 +360,19 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                 ),
               );
             }),
+        floatingActionButton: shop.currentOrder == null
+            ? null
+            : badges.Badge(
+                showBadge: shop.currentOrder!.orderItems.isNotEmpty,
+                badgeContent:
+                    Text(shop.currentOrder!.orderItems.length.toString()),
+                child: FloatingActionButton(
+                  onPressed: () {
+                    widget.onShowCart();
+                  },
+                  child: const Icon(Icons.shopping_cart),
+                ),
+              ),
       );
     });
   }

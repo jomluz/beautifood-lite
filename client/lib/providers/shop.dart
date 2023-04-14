@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:beautifood_lite/providers/auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/web3dart.dart';
 
 class MenuItemOption {
   final String name;
@@ -199,8 +201,9 @@ class Shop with ChangeNotifier {
   ShopMenu? _shopMenu;
 
   String? _myTableNumber;
-  String? _orderSessionId;
   Order? _currentOrder;
+  String? _currentOrderId;
+  final List<String> _submittedTxns = [];
 
   Shop(Auth? auth) {
     _auth = auth;
@@ -211,6 +214,11 @@ class Shop with ChangeNotifier {
   String? get selectedShopId => _selectedShopId;
   set selectedShopId(String? id) {
     _selectedShopId = id;
+    if (id == null) {
+      _shopData = null;
+      _shopMenu = null;
+      _menuItems = null;
+    }
     notifyListeners();
   }
 
@@ -220,18 +228,38 @@ class Shop with ChangeNotifier {
     notifyListeners();
   }
 
-  String? get orderSessionId => _orderSessionId;
+  String? get orderSessionId => _currentOrder?.id;
   set orderSessionId(String? id) {
-    _orderSessionId = id;
+    if (_currentOrder != null) {
+      clearOrderSession();
+    }
+    _currentOrderId = id;
     notifyListeners();
   }
 
   ShopData? get shopData => _shopData;
   ShopMenu? get shopMenu => _shopMenu;
   String? get myTableNumber => _myTableNumber;
+  Order? get currentOrder => _currentOrder;
 
   Future<void> getShop() async {
     // dummy data
+    if (_selectedShopId == null) return;
+    final abi =
+        await rootBundle.loadString('assets/contracts/BeautifoodL2.abi.json');
+    final contract = DeployedContract(
+      ContractAbi.fromJson(abi, 'BeautifoodL2'),
+      EthereumAddress.fromHex('0xAfC45Ef7d4BA01c531E3F26676832B81dD77bD4B'),
+    );
+    final function = contract.function("getMenu");
+    final result = await _auth!.rpcClient.call(
+      contract: contract,
+      function: function,
+      params: [
+        EthereumAddress.fromHex(_selectedShopId!),
+      ],
+    );
+    print(result);
     final allTimes = [
       const MenuTime(0, 0, 24 * 60),
       const MenuTime(1, 0, 24 * 60),
@@ -276,7 +304,9 @@ class Shop with ChangeNotifier {
         tags: ["Salad"],
         options: [],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://ichef.bbci.co.uk/food/ic/food_16x9_832/recipes/fresh_fruit_salad_61942_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -297,7 +327,9 @@ class Shop with ChangeNotifier {
         tags: ["Soup"],
         options: [],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://food-images.files.bbci.co.uk/food/recipes/mushroomsoup_77788_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -318,7 +350,9 @@ class Shop with ChangeNotifier {
         tags: ["Pasta"],
         options: [],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://www.culinaryhill.com/wp-content/uploads/2021/12/Spaghetti-Carbonara-Culinary-Hill-1200x800-1.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -334,9 +368,9 @@ class Shop with ChangeNotifier {
         isDineIn: true,
         isTakeAway: true,
         isPreferred: false,
-        category: "Appetisers",
-        subcategory: "Salad",
-        tags: ["Salad"],
+        category: "Main Course",
+        subcategory: "Steaks",
+        tags: ["Steaks"],
         options: [
           const MenuItemOption(
             "Sauce",
@@ -355,7 +389,9 @@ class Shop with ChangeNotifier {
           ),
         ],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://ichef.bbci.co.uk/food/ic/food_16x9_832/recipes/rib-eye_steak_with_61963_16x9.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -376,7 +412,9 @@ class Shop with ChangeNotifier {
         tags: ["Cakes"],
         options: [],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://i0.wp.com/www.onceuponachef.com/images/2017/12/cheesecake.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
@@ -397,13 +435,18 @@ class Shop with ChangeNotifier {
         tags: ["Ice Creams"],
         options: [],
         otherAttributes: [],
-        imageUrls: [],
+        imageUrls: [
+          "https://upload.wikimedia.org/wikipedia/commons/4/46/Matcha_ice_cream_001.jpg"
+        ],
         availableTimes: allTimes,
         index: 0,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
     ];
+    if (_currentOrder == null && _currentOrderId != null) {
+      await newOrder(_myTableNumber, _currentOrderId);
+    }
   }
 
   List<MenuItem> getCategoryFoodItems(String category) {
@@ -429,7 +472,7 @@ class Shop with ChangeNotifier {
     if (_currentOrder == null) return;
     _currentOrder!.orderItems.add(
       OrderItem(
-        id: "",
+        id: createCryptoRandomString(24),
         shopId: shopId,
         isDineIn: isDineIn,
         tableNumber: _myTableNumber ?? "",
@@ -441,32 +484,98 @@ class Shop with ChangeNotifier {
         subtotal: subtotal,
       ),
     );
+    notifyListeners();
+  }
+
+  Future<void> removeItemFromOrderSession(
+    String id,
+  ) async {
+    if (_currentOrder == null) return;
+    _currentOrder!.orderItems.removeWhere((element) => element.id == id);
+    notifyListeners();
+  }
+
+  Future<void> submitOrderItems(List<String> selectedOrderItems) async {
+    final abi =
+        await rootBundle.loadString('assets/contracts/BeautifoodL2.abi.json');
+    final contract = DeployedContract(
+      ContractAbi.fromJson(abi, 'BeautifoodL2'),
+      EthereumAddress.fromHex('0xAfC45Ef7d4BA01c531E3F26676832B81dD77bD4B'),
+    );
+    final function = contract.function("submitOrder");
+    print("Preparing to send");
+    final transaction = Transaction.callContract(
+      from: EthereumAddress.fromHex(_auth!.address!),
+      contract: contract,
+      function: function,
+      parameters: [
+        [
+          [BigInt.from(0), BigInt.from(2)],
+          [BigInt.from(1), BigInt.from(3)],
+        ],
+        EthereumAddress.fromHex(
+            _selectedShopId!) //0x41C929802517f5CE1eD0d6684B579F6E44d277b5
+      ],
+      gasPrice: EtherAmount.inWei(BigInt.one),
+      maxGas: 100000,
+    );
+    print("Preparing to send.");
+    final credentials =
+        WalletConnectEthereumCredentials(provider: _auth!.provider!);
+
+    // Sign the transaction
+    print("Preparing to send..");
+    try {
+      final txBytes =
+          await _auth!.rpcClient.sendTransaction(credentials, transaction);
+      _currentOrder!.orderItems
+          .where(
+            (element) => selectedOrderItems.contains(element.id),
+          )
+          .forEach(
+            (element) => element.confirmedTime = DateTime.now(),
+          );
+      print(txBytes);
+      _submittedTxns.add(txBytes);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error: $e');
+    }
   }
 
   Future<void> newOrder(String? tableNumber, String? orderSessionId) async {
-    if (orderSessionId == null) {
-      var values = List<int>.generate(24, (i) => Random.secure().nextInt(256));
-
-      orderSessionId = base64Url.encode(values);
-    }
     _currentOrder = Order(
-      id: orderSessionId,
+      id: orderSessionId ?? createCryptoRandomString(12),
       shopId: shopData!.id,
-      userId: _auth!.address,
+      userId: _auth!.address!,
       orderItems: [],
       tableNumber: tableNumber ?? "",
       remarks: "",
       status: [],
     );
+    _myTableNumber = tableNumber;
+    notifyListeners();
   }
 
   void clear() {
     _shopData = null;
-    notifyListeners();
+    _selectedShopId = null;
+    _selectedMenuItemId = null;
+    _shopMenu = null;
+    _menuItems = null;
+    clearOrderSession();
   }
 
   void clearOrderSession() {
-    _orderSessionId = null;
+    _currentOrder = null;
     _myTableNumber = null;
+    notifyListeners();
+  }
+
+  static String createCryptoRandomString([int length = 32]) {
+    var values =
+        List<int>.generate(length, (i) => Random.secure().nextInt(256));
+
+    return base64Url.encode(values);
   }
 }
