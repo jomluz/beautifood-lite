@@ -1,6 +1,7 @@
 # **Beautifood**
 
 ## **Project Description**
+A decentralised platform aiming to help merchants build their brand and digitalise their businesses with almost zero cost. Users without professional skills can get onboard easily while they can also make their own highly customised solution with Beautifood. From features such as Point of Sales (POS), QR ordering, to advertising their shop, and even membership and loyalty system, Beautifood is all you need to start a digital F&B business.
 
 ## **How it's Made**
 
