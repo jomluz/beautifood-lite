@@ -18,12 +18,24 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
   final Auth _authService;
   final Shop _shopService;
   final AppState _appState = AppState();
+  bool? autoLoginResult;
   // String? _emailVerificationToken;
   // String? _passwordResetToken;
   bool _showPageNotFound = false;
 
   AppRouterDelegate(this._authService, this._shopService)
-      : navigatorKey = GlobalKey<NavigatorState>();
+      : navigatorKey = GlobalKey<NavigatorState>() {
+    _authService.addListener(notifyListeners);
+    _shopService.addListener(notifyListeners);
+    // addListener(shop.notifyListeners);
+    _appState.addListener(notifyListeners);
+    if (autoLoginResult == null) {
+      _authService.tryAutoLogin().then((value) {
+        autoLoginResult = value;
+        notifyListeners();
+      });
+    }
+  }
 
   @override
   AppRoutePath? get currentConfiguration {
@@ -105,6 +117,9 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
                 _shopService.selectedMenuItemId = p0;
                 // notifyListeners();
               },
+              onShowCart: () {
+                _appState.isShowCart = true;
+              },
             ),
           ),
         if (_shopService.selectedMenuItemId != null)
@@ -130,6 +145,13 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
       pages: stack,
       onPopPage: (route, result) {
         if (!route.didPop(result)) return false;
+        if (_appState.isShowCart) {
+          _appState.isShowCart = false;
+        } else if (_shopService.selectedMenuItemId != null) {
+          _shopService.selectedMenuItemId = null;
+        } else if (_shopService.selectedShopId != null) {
+          _shopService.selectedShopId = null;
+        }
         notifyListeners();
         return true;
       },
@@ -143,7 +165,8 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
         _shopService.clear();
         _shopService.selectedShopId = configuration.id;
       }
-      if (configuration.sessionId != null && _shopService.orderSessionId == null) {
+      if (configuration.sessionId != null &&
+          _shopService.orderSessionId == null) {
         _shopService.orderSessionId = configuration.sessionId;
       } else if (configuration.tableNo != null) {
         // if (orders.ordersSubscription == null) {
@@ -157,6 +180,10 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
     if (configuration is MenuItemPath) {
       _shopService.selectedShopId = configuration.shopId;
       _shopService.selectedMenuItemId = configuration.menuItemId;
+    }
+    if (configuration is AuthPath) {
+      _shopService.selectedShopId = null;
+      _shopService.selectedMenuItemId = null;
     }
     // if (configuration is EmailVerificationPath) {
     //   _emailVerificationToken = configuration.token;

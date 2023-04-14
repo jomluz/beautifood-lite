@@ -1,6 +1,8 @@
+import 'package:beautifood_lite/providers/auth.dart';
 import 'package:beautifood_lite/router/route_path.dart';
 import 'package:beautifood_lite/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePath extends AppRoutePath {
   @override
@@ -32,6 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Provider.of<Auth>(context, listen: false).killSession();
+              },
+              icon: const Icon(Icons.logout))
+        ],
       ),
       body: Column(
         children: [

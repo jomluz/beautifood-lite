@@ -11,7 +11,7 @@ pipeline {
         stage('Build Images') {
           steps{
             script {
-              clientImage = docker.build(registry + 'client', '--build-arg ENABLED_MODULES="brotli" --build-arg BUILD_NUM=$BUILD_NUMBER --memory 1500m --no-cache ./client')
+              clientImage = docker.build(registry + 'client', '--build-arg ENABLED_MODULES="brotli" --build-arg BUILD_NUM=$BUILD_NUMBER --memory 1500m ./client')
             }
           }
         }

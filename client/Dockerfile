@@ -18,7 +18,7 @@ RUN cd Android/sdk/tools/bin && ./sdkmanager "build-tools;29.0.2" "patcher;v4" "
 ENV PATH "$PATH:/flutter/Android/sdk/platform-tools"
 
 # Download Flutter SDK
-RUN git clone https://github.com/flutter/flutter.git -b beta
+RUN git clone https://github.com/flutter/flutter.git -b master
 ENV PATH "$PATH:/flutter/flutter/bin"
 
 # Run basic check to download Dark SDK
@@ -26,7 +26,7 @@ RUN flutter doctor
 WORKDIR /app
 COPY . .
 ARG BUILD_NUM
-# RUN sed -i "s/DEBUG/$BUILD_NUM/" ./lib/env.dart
+RUN sed -i "s/DEBUG/$BUILD_NUM/" ./lib/env.dart
 # RUN sed -i "s/:\/\/localhost:8000/s:\/\/app.beautifood.io/" ./lib/env.dart
 RUN flutter pub get
 RUN flutter build web --release
