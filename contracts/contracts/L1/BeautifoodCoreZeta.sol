@@ -35,7 +35,7 @@ contract BeautifoodZeta is ZetaReceiver, ZetaInteractor {
         ) = abi.decode(zetaMessage.message, (bytes32, address, uint256));
         bool success = IERC20(zetaAddr).transfer(
             receiverAddress,
-            amountToTransfer
+            zetaMessage.zetaValueAndGas
         );
     }
 
